@@ -6,31 +6,61 @@
 //
 
 import UIKit
-
-@main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-
+import Flutter
+import FlutterPluginRegistrant
 
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-        return true
-    }
+@UIApplicationMain
+class AppDelegate: FlutterAppDelegate { // More on the FlutterAppDelegate.
+  lazy var flutterEngine = FlutterEngine(name: "talkvia_flutter_engine")
 
-    // MARK: UISceneSession Lifecycle
+  override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+      
+    // Runs the default Dart entrypoint with a default Flutter route.
+    flutterEngine.run();
+      
+      if let controller = window?.rootViewController as? FlutterViewController {
+          let channel = FlutterMethodChannel(
+              name: "talkvia.flutter.chatbot/phrase",
+              binaryMessenger: controller.binaryMessenger)
 
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        // Called when a new scene session is being created.
-        // Use this method to select a configuration to create the new scene with.
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-    }
-
-    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-        // Called when the user discards a scene session.
-        // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-        // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
-    }
-
-
+          channel.setMethodCallHandler({ [weak self] (
+              call: FlutterMethodCall,
+              result: @escaping FlutterResult) -> Void in
+              print("Inside setMethodCallHandler ---- SWIFT")
+              print(call.method)
+              switch call.method {
+              case "getStartupArgs":
+                  print("getStartupArgs ---- SWIFT")
+                  result([
+                    "chatbotName": "TalkVia Chatbot",
+                    "subheading" : "Config subheading",
+                    "fulfilmentURL" : "https://voicebotsvc.talkvia.com/Process/ChatBot?ProjectId=3f40d537-b5d2-4257-aa7f-5b4d56be43ed",
+                    "primaryColor" : "#6067d8",
+                    "secondaryColor" : "#fe8a73",
+                    "headingTextColor" : "#000000",
+                    "imageSourceURL" : "https://picsum.photos/200",
+                    "minimizedImageURL" : "test",
+                    "backgroundImageURL" : "test",
+                    "responseDelay" : "2000",
+                    "googleInvocation" : "",
+                    "alexaInvocation" : "",
+                    "carouselTime" : "8000",
+                    "allowSound" : "true",
+                    "soundOnDefault" : "false",
+                    "allowSpeechRecognition" : "true",
+                    "showTextbox" : "false"
+                ])
+              case "getEnteredPhrase":
+                  print("getEnteredPhrase ---- SWIFT")
+              default:
+                  result(FlutterMethodNotImplemented)
+              }
+          })
+          print("I got here, meaning rootViewController was ok")
+      }
+      
+    GeneratedPluginRegistrant.register(with: self.flutterEngine);
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions);
+  }
 }
-
